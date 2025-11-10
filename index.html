@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🌊 Dalga Sınıflandırma: Gör, Sürükle, Öğren!</title>
+  <style>
+    :root{
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      --bg: #0f172a;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --border-strong: #475569;
+      --panel: #1e293b;
+      --panel-hover: #334155;
+      --card-bg: #f8fafc;
+      --card-text: #1e293b;
+      --green: #10b981;
+      --green-glow: #34d399;
+      --rose: #f43f5e;
+      --rose-glow: #fb7185;
+      --accent: #06b6d4;
+      --accent-glow: #22d3ee;
+    }
+
+    [data-theme="light"]{
+      --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+      --bg: #f8fafc;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #cbd5e1;
+      --border-strong: #94a3b8;
+      --panel: #ffffff;
+      --panel-hover: #f1f5f9;
+      --card-bg: #ffffff;
+      --card-text: #1e293b;
+      --green: #10b981;
+      --green-glow: #34d399;
+      --rose: #f43f5e;
+      --rose-glow: #fb7185;
+      --accent: #06b6d4;
+      --accent-glow: #0891b2;
+    }
+    
+    *{box-sizing:border-box;margin:0;padding:0}
+    
+    html,body{
+      height:100%;
+      /* GENEL KAYDIRMAYI ENGELLER */
+      overflow: hidden; 
+    }
+    
+    body{
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+      background:var(--bg);
+      background-image:var(--bg-gradient);
+      background-attachment:fixed;
+      color:var(--text);
+      line-height:1.6;
+      min-height:100vh;
+      /* GENEL KAYDIRMAYI ENGELLER */
+      overflow: hidden; 
+    }
+    
+    .container{
+      max-width:1600px;
+      margin:0 auto;
+      padding:16px 20px 20px; 
+      height: 100vh;
+      min-height:100vh;
+      /* YENİ: Flex Container Yapısı */
+      display: flex; 
+      flex-direction: column;
+    }
+
+    /* YENİ KURAL: Başlık ve altbilgi dışındaki tüm dikey alanı doldurur */
+    #main-content{
+      flex: 1; /* Kalan tüm dikey alanı kapla */
+      padding-bottom: 20px; /* Butonlar ve footer için boşluk bırak */
+      display: flex; /* İçindeki öğeleri de dikey hizalamak için */
+      flex-direction: column;
+    }
+
+    /* YENİ KURAL: Footer ve butonları alt kısma iter */
+    .desktop-controls, .muted{
+        flex-shrink: 0;
+    }
+
+    .theme-toggle{
+      position:fixed;
+      top:20px;
+      right:20px;
+      z-index:1000;
+      background:var(--panel);
+      border:2px solid var(--border);
+      border-radius:50px;
+      padding:8px 12px;
+      cursor:pointer;
+      transition:all 0.3s ease;
+      box-shadow:0 4px 12px rgba(0,0,0,.2);
+    }
+
+    .theme-toggle:hover{
+      background:var(--panel-hover);
+      transform:translateY(-2px);
+      box-shadow:0 6px 20px rgba(0,0,0,.3);
+    }
+
+    .theme-toggle .icon{
+      font-size:20px;
+      transition:transform 0.3s ease;
+    }
+
+    [data-theme="light"] .theme-toggle .sun{
+      display:none;
+    }
+
+    [data-theme="light"] .theme-toggle .moon{
+      display:block;
+    }
+
+    .theme-toggle .sun{
+      display:block;
+    }
+
+    .theme-toggle .moon{
+      display:none;
+    }
+    
+    header.appbar{
+      position:relative;
+      top:0;
+      z-index:10;
+      background:rgba(15,23,42,.85);
+      backdrop-filter:saturate(1.3) blur(12px);
+      border-bottom:1px solid var(--border);
+      border-radius:0 0 16px 16px;
+      padding:16px 20px 16px 20px;
+      margin-bottom:24px;
+      box-shadow:0 4px 20px rgba(0,0,0,.3);
+      transform:translateY(0);
+      transition:transform 0.3s ease;
+      flex-shrink: 0; /* Başlığın küçülmesini engelle */
+    }
+
+    [data-theme="light"] header.appbar{
+      background:rgba(255,255,255,.85);
+    }
+    
+    header.appbar.hidden{
+      transform:translateY(-100%);
+    }
+    
+    @media (min-width:768px){
+      header.appbar.hidden{
+        transform:translateY(0);
+      }
+    }
+    
+    h1{
+      font-size:clamp(22px,3.5vw,32px);
+      margin:0 0 8px;
+      font-weight:800;
+      background:linear-gradient(120deg, var(--accent-glow), var(--green-glow));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    
+    p.lead{
+      margin:0;
+      color:var(--text-muted);
+      font-size:clamp(13px,2.2vw,15px);
+      line-height:1.5;
+    }
+    
+    .toolbar{
+      display:none;
+    }
+    
+    @media (min-width:768px){
+      .toolbar{
+        display:flex;
+        gap:12px;
+        justify-content:center;
+        margin-top:24px;
+      }
+    }
+    
+    .btn{
+      appearance:none;
+      border:2px solid var(--accent);
+      background:linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      color:#fff;
+      border-radius:12px;
+      padding:12px 24px;
+      cursor:pointer;
+      box-shadow:0 4px 12px rgba(6,182,212,.3);
+      font-weight:600;
+      font-size:15px;
+      transition:all .2s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    
+    .btn::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:-100%;
+      width:100%;
+      height:100%;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+      transition:left .5s;
+    }
+    
+    .btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 6px 20px rgba(6,182,212,.4);
+      border-color:var(--accent-glow);
+    }
+    
+    .btn:active{
+      transform:translateY(0);
+    }
+    
+    @media (min-width:768px){
+      .btn{
+        padding:16px 32px;
+        font-size:16px;
+      }
+    }
+    
+    .score{
+      font-size:16px;
+      color:var(--text);
+      margin:8px 0 24px;
+      padding:12px 20px;
+      background:rgba(6,182,212,.1);
+      border:1px solid var(--accent);
+      border-radius:12px;
+      display:inline-block;
+      flex-shrink: 0; /* Skor alanının küçülmesini engelle */
+    }
+
+    /* YENİ KURAL: Sınıflandırma Panellerinin kalan dikey alanı doldurmasını sağla */
+    .classification-panels{
+        display:grid;
+        gap:20px;
+        flex: 1; /* Dalga havuzu hariç kalan alanı doldur */
+    }
+
+    .score b{
+      color:var(--accent-glow);
+      font-size:20px;
+    }
+
+    .zone{
+      border:2px solid var(--border-strong);
+      border-radius:16px;
+      background:var(--panel);
+      padding:20px;
+      min-height:12rem;
+      transition:all .2s ease;
+      box-shadow:0 2px 8px rgba(0,0,0,.2);
+    }
+    
+    .zone.pool{
+      border-style:dashed;
+      border-color:var(--accent);
+      background:rgba(6,182,212,.05);
+    }
+    
+    .zone:hover{
+      background:var(--panel-hover);
+      border-color:var(--accent);
+      transform:translateY(-2px);
+      box-shadow:0 4px 16px rgba(0,0,0,.3);
+    }
+    
+    .zone-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:12px;
+      padding-bottom:8px;
+      border-bottom:1px solid var(--border);
+    }
+    
+    .zone-title{
+      font-weight:700;
+      font-size:15px;
+      color:var(--accent-glow);
+    }
+    
+    .zone-count{
+      font-size:13px;
+      color:var(--text-muted);
+      background:rgba(148,163,184,.15);
+      padding:3px 10px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,.2);
+      font-weight:500;
+      min-width:50px;
+      text-align:center;
+      box-shadow:0 1px 3px rgba(0,0,0,.1);
+    }
+    
+    .cards{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .card{
+      user-select:none;
+      cursor:move;
+      border:2px solid #cbd5e1;
+      background:var(--card-bg);
+      color:var(--card-text);
+      border-radius:10px;
+      padding:10px 16px;
+      box-shadow:0 2px 6px rgba(0,0,0,.15);
+      font-size:14px;
+      font-weight:500;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition:all .15s ease;
+    }
+    
+    .card:hover{
+      box-shadow:0 4px 12px rgba(0,0,0,.25);
+      transform:translateY(-2px);
+      border-color:#94a3b8;
+    }
+    
+    .card.correct{
+      border-color:var(--green);
+      background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      box-shadow:0 4px 12px rgba(16,185,129,.3);
+    }
+    
+    .card.wrong{
+      border-color:var(--rose);
+      background:linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%);
+      box-shadow:0 4px 12px rgba(244,63,94,.3);
+    }
+    
+    .card.selected{
+      outline:3px solid var(--accent);
+      outline-offset:2px;
+      transform:scale(1.05);
+      box-shadow:0 0 20px rgba(6,182,212,.5);
+    }
+
+    .wave-item{
+      user-select:none;
+      cursor:move;
+      border:2px solid #cbd5e1;
+      background:var(--card-bg);
+      color:var(--card-text);
+      border-radius:10px;
+      padding:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,.15);
+      font-size:14px;
+      font-weight:500;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      transition:all .15s ease;
+      width:120px;
+    }
+    
+    .wave-item:hover{
+      box-shadow:0 4px 12px rgba(0,0,0,.25);
+      transform:translateY(-2px);
+      border-color:#94a3b8;
+    }
+
+    .wave-item img, .wave-item .svg-content{
+      width:80px;
+      height:60px;
+      border-radius:5px;
+      object-fit:contain;
+    }
+    
+    .tick{
+      font-size:14px;
+      font-weight:bold;
+    }
+
+    .grid{
+      display:grid;
+      gap:16px;
+      margin-bottom:32px;
+    }
+    
+    @media (min-width:640px){
+      .grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+    
+    @media (min-width:1024px){
+      .grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+    }
+
+    .fab{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      z-index:20;
+    }
+    
+    @media (min-width:768px){
+      .fab{
+        display:none;
+      }
+    }
+
+    .fab .btn{
+      min-width:48px;
+      min-height:48px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    
+    .desktop-controls{
+      display:none;
+    }
+    
+    @media (min-width:768px){
+      .desktop-controls{
+        display:flex;
+        justify-content:center;
+        gap:16px;
+        margin-top:32px;
+        flex-wrap:wrap;
+        align-items:center;
+      }
+    }
+
+    .muted{
+      color:var(--text-muted);
+      font-size:13px;
+      margin-top:32px;
+      padding:16px;
+      background:rgba(148,163,184,.05);
+      border-radius:12px;
+      border-left:3px solid var(--accent);
+    }
+    
+    .section-title{
+      font-size:18px;
+      margin:0 0 12px;
+      font-weight:700;
+      color:var(--accent-glow);
+    }
+    
+    .modal-overlay{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background:rgba(0,0,0,0.8);
+      backdrop-filter:blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      animation:fadeIn 0.3s ease;
+    }
+    
+    .modal-overlay.show{
+      display:flex;
+    }
+    
+    @keyframes fadeIn{
+      from{opacity:0;}
+      to{opacity:1;}
+    }
+    
+    @keyframes scaleIn{
+      from{transform:scale(0.8); opacity:0;}
+      to{transform:scale(1); opacity:1;}
+    }
+    
+    .modal-card{
+      background:linear-gradient(135deg, var(--panel) 0%, #334155 100%);
+      border:3px solid var(--green-glow);
+      border-radius:24px;
+      padding:48px 32px;
+      max-width:500px;
+      width:90%;
+      text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.2);
+      animation:scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    
+    .modal-icon{
+      font-size:80px;
+      margin-bottom:24px;
+      animation:bounce 0.6s ease;
+    }
+    
+    @keyframes bounce{
+      0%, 100%{transform:translateY(0);}
+      50%{transform:translateY(-20px);}
+    }
+    
+    .modal-title{
+      font-size:32px;
+      font-weight:800;
+      background:linear-gradient(120deg, var(--green-glow), var(--accent-glow));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      margin:0 0 16px;
+    }
+    
+    .modal-text{
+      font-size:18px;
+      color:var(--text);
+      margin:0 0 32px;
+      line-height:1.6;
+    }
+    
+    .modal-btn{
+      appearance:none;
+      border:2px solid var(--green);
+      background:linear-gradient(135deg, var(--green) 0%, #059669 100%);
+      color:#fff;
+      border-radius:12px;
+      padding:16px 48px;
+      cursor:pointer;
+      box-shadow:0 4px 12px rgba(16,185,129,.4);
+      font-weight:700;
+      font-size:16px;
+      transition:all .2s ease;
+    }
+    
+    .modal-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 6px 20px rgba(16,185,129,.6);
+      border-color:var(--green-glow);
+    }
+    
+    .modal-btn:active{
+      transform:translateY(0);
+    }
+
+    .wave-gallery{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:flex-start;
+    }
+
+    .classification-panels{
+      display:grid;
+      gap:20px;
+    }
+
+    @media (min-width: 1600px){
+      .classification-panels{
+        grid-template-columns:1fr 1fr;
+        gap:24px;
+      }
+    }
+
+    .classification-panel{
+      border:2px solid var(--border-strong);
+      border-radius:16px;
+      background:var(--panel);
+      padding:16px;
+      transition:all .2s ease;
+      box-shadow:0 2px 8px rgba(0,0,0,.2);
+    }
+
+    .panel-header{
+      background:linear-gradient(135deg, var(--accent) 0%, #0891b2 100%);
+      color:#fff;
+      padding:12px 16px;
+      border-radius:10px;
+      margin-bottom:16px;
+      text-align:center;
+      font-weight:600;
+      font-size:14px;
+    }
+
+    .categories-grid{
+      display:grid;
+      gap:18px;
+    }
+
+    @media (min-width:768px){
+      .categories-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+    }
+
+    .category{
+      border:2px dashed var(--border);
+      border-radius:10px;
+      padding:18px;
+      min-height:140px;
+      text-align:center;
+      transition:all .2s ease;
+      position:relative;
+      background:rgba(6,182,212,.02);
+    }
+
+    .category.drag-over{
+      border-color:var(--accent);
+      background:rgba(6,182,212,.1);
+      transform:scale(1.02);
+    }
+
+    .category h4{
+      color:var(--text);
+      margin-bottom:8px;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    .category-items{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      justify-content:center;
+    }
+
+    .placed-item{
+      background:var(--accent);
+      color:#fff;
+      padding:4px 8px;
+      border-radius:12px;
+      font-size:12px;
+      margin:2px;
+      position:relative;
+      cursor:pointer;
+      transition:all .2s ease;
+    }
+
+    .placed-item:hover{
+      background:var(--accent-glow);
+    }
+
+    .placed-item.correct{
+      border:2px solid var(--green);
+      background:var(--green);
+    }
+
+    .placed-item.incorrect{
+      border:2px solid var(--rose);
+      background:var(--rose);
+    }
+
+    .remove-btn{
+      margin-left:4px;
+      cursor:pointer;
+      font-weight:bold;
+      color:#fff;
+    }
+
+    .user-guide-modal .modal-card{
+      max-width:1200px;
+      max-height:95vh;
+      overflow-y:auto;
+    }
+
+    .user-guide-content{
+      text-align:left;
+      line-height:1.8;
+      font-size:16px;
+    }
+    
+    .user-guide-content h3{
+      font-size:22px;
+    }
+    
+    .user-guide-content h4{
+      font-size:18px;
+    }
+
+    .user-guide-content h3{
+      color:var(--accent-glow);
+      margin:20px 0 10px 0;
+      font-size:18px;
+    }
+
+    .user-guide-content p{
+      margin:10px 0;
+    }
+
+    .user-guide-content ul{
+      margin:10px 0 10px 20px;
+    }
+
+    .user-guide-content li{
+      margin:5px 0;
+    }
+
+    .user-guide-content strong{
+      color:var(--accent-glow);
+    }
+
+    @media (max-width: 1920px){
+      .container{
+        max-width:1800px;
+        padding:20px 30px 20px; /* Alt padding flex için ayarlandı */
+      }
+      
+      header.appbar{
+        padding:20px 30px;
+      }
+      
+      .grid{
+        gap:20px;
+      }
+      
+      .wave-gallery{
+        gap:15px;
+      }
+      
+      .wave-item{
+        width:140px;
+        padding:12px;
+      }
+      
+      .wave-item img, .wave-item .svg-content{
+        width:100px;
+        height:70px;
+      }
+      
+      .zone{
+        min-height:200px;
+        padding:20px;
+      }
+      
+      .zone-count{
+        font-size:14px;
+        padding:4px 12px;
+        min-width:60px;
+      }
+      
+      .category{
+        min-height:160px;
+        padding:18px;
+      }
+    }
+    
+    @media (min-width: 1800px){
+      .container{
+        max-width:1900px;
+        padding:25px 35px 25px; /* Alt padding flex için ayarlandı */
+      }
+      
+      .wave-item{
+        width:160px;
+        padding:15px;
+      }
+      
+      .wave-item img, .wave-item .svg-content{
+        width:110px;
+        height:80px;
+      }
+      
+      .zone{
+        min-height:240px;
+        padding:25px;
+      }
+      
+      .zone-count{
+        font-size:15px;
+        padding:5px 14px;
+        min-width:70px;
+      }
+      
+      .category{
+        min-height:180px;
+        padding:20px;
+      }
+      
+      .categories-grid{
+        gap:20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="appbar">
+      <div>
+        <h1>🌊 Dalga Sınıflandırma: Gör, Sürükle, Öğren!</h1>
+        <p class="lead">Dalga görsellerini uygun kategorilere <b>sürükleyip bırakın</b>. İsterseniz bir dalga görseline tıklayıp ardından bir kategoriye tıklayarak da yerleştirebilirsiniz. Her dalga için hem titreşim doğrultusu hem de enerji taşıma biçimini belirtmelisiniz.</p>
+      </div>
+    </header>
+
+
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <span class="icon sun">☀️</span>
+      <span class="icon moon">🌙</span>
+    </div>
+
+    <section class="score" id="scoreArea">Skor: <b>Henüz kontrol edilmedi</b></section>
+
+    <main id="main-content">
+        <section style="margin-bottom:24px">
+          <h2 class="section-title">🌊 Dalga Görselleri Havuzu</h2>
+          <div class="zone pool" id="zone-pool" data-zone="pool" role="region" aria-label="Boş Dalga Alanı">
+            <div class="zone-header"><span class="zone-title">Boş Dalga Alanı</span><span class="zone-count" id="count-pool">0 dalga</span></div>
+            <div class="wave-gallery" id="wave-pool"></div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="section-title">📚 Sınıflandırma Kategorileri</h2>
+          <div class="classification-panels">
+            <div class="classification-panel">
+              <div class="panel-header">
+                🔄 Titreşim Doğrultusuna Göre Sınıflandırma
+              </div>
+              <div class="categories-grid" id="vibration-categories"></div>
+            </div>
+            
+            <div class="classification-panel">
+              <div class="panel-header">
+                ⚡ Enerji Taşıma Biçimine Göre Sınıflandırma
+              </div>
+              <div class="categories-grid" id="energy-categories"></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="desktop-controls">
+          <button class="btn" id="btnCheck">✓ Kontrol Et</button>
+          <button class="btn" id="btnReset">↻ Sıfırla</button>
+          <button class="btn" id="btnReveal">👁 Cevapları Göster</button>
+          <button class="btn" id="btnGuide" onclick="showUserGuide()">📖 Kullanım Kılavuzu</button>
+        </div>
+    </main>
+    <div class="fab">
+      <button class="btn" id="fabCheck" aria-label="Kontrol Et">✓</button>
+      <button class="btn" id="fabReset" aria-label="Sıfırla">↻</button>
+      <button class="btn" id="fabReveal" aria-label="Cevapları Göster">👁</button>
+      <button class="btn" id="fabGuide" onclick="showUserGuide()" aria-label="Kullanım Kılavuzu">📖</button>
+    </div>
+
+    <footer class="muted">
+      <strong>💡 Not:</strong> Bu etkinlikte dalga türleri hem titreşim doğrultusuna göre (enine, boyuna, karma) hem de enerji taşıma biçimine göre (mekanik, elektromanyetik) sınıflandırılacaktır. Her dalga görseli her iki kategori sisteminde de yer almalıdır.
+    </footer>
+  </div>
+
+  <div class="modal-overlay" id="congratsModal">
+    <div class="modal-card">
+      <div class="modal-icon">🎉</div>
+      <h2 class="modal-title">Tebrikler!</h2>
+      <p class="modal-text">Tüm dalga sınıflandırmalarını doğru yaptınız! Dalga fiziği konusundaki bilginizi başarıyla sergilediniz! 🌊</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="modal-btn" onclick="document.getElementById('congratsModal').classList.remove('show')">Kapat</button>
+        <button class="modal-btn" onclick="document.getElementById('congratsModal').classList.remove('show');resetAll();">🔄 Yeniden Başlat</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay user-guide-modal" id="userGuideModal">
+    <div class="modal-card">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div class="modal-icon" style="font-size:60px;">📖</div>
+        <h2 class="modal-title">Kullanım Kılavuzu</h2>
+      </div>
+      
+      <div class="user-guide-content">
+        <h3>🎯 Simülasyonun Amacı</h3>
+        <p>Bu simülasyon dalgaları iki farklı kriterle sınıflandırmanızı sağlar:</p>
+        <ul>
+          <li><strong>🔄 Titreşim Doğrultusuna Göre:</strong> Enine, Boyuna, Hem Enine Hem Boyuna</li>
+          <li><strong>⚡ Enerji Taşıma Biçimine Göre:</strong> Mekanik, Elektromanyetik</li>
+        </ul>
+
+        <h3>🖱️ Nasıl Kullanılır?</h3>
+        <ol>
+          <li><strong>Dalga Görsellerini İnceleyiniz:</strong> Sol panelde bulunan dalga türlerini dikkatli inceleyiniz</li>
+          <li><strong>Sürükle ve Bırak:</strong> Bir dalga görselini sürükleyip uygun kategoriye bırakınız</li>
+          <li><strong>Tıklama Alternatifi:</strong> Önce dalga görseline, sonra kategoriye tıklayabilirsiniz</li>
+          <li><strong>Çoklu Sınıflandırma:</strong> Her dalga hem titreşim hem enerji kategorisine yerleştirilmelidir</li>
+          <li><strong>Hataları Düzeltiniz:</strong> Yanlış yerleştirdiğiniz dalgaların yanındaki × işaretine tıklayınız</li>
+          <li><strong>Kontrol Ediniz:</strong> "Kontrol Et" butonuna basarak sonuçları görüntüleyiniz</li>
+        </ol>
+
+        <h3>📋 Sınıflandırma Kategorileri</h3>
+        
+        <h4 style="color:var(--accent);margin:15px 0 8px 0;">🔄 Titreşim Doğrultusu:</h4>
+        <ul>
+          <li><strong>Enine Dalga:</strong> Titreşim dalga yayılma doğrultusuna dik (ışık, radar)</li>
+          <li><strong>Boyuna Dalga:</strong> Titreşim dalga yayılma doğrultusuna paralel (ses, ultrason)</li>
+          <li><strong>Hem Enine Hem Boyuna:</strong> Her iki özelliği de gösteren (deprem, su dalgaları)</li>
+        </ul>
+
+        <h4 style="color:var(--accent);margin:15px 0 8px 0;">⚡ Enerji Taşıma Biçimi:</h4>
+        <ul>
+          <li><strong>Mekanik Dalga:</strong> Maddesel ortam gerektirir (ses, deprem, su dalgaları)</li>
+          <li><strong>Elektromanyetik Dalga:</strong> Boşlukta yayılır, maddeye ihtiyaç duymaz (ışık, radar, röntgen)</li>
+        </ul>
+
+        <h3>🏆 Başarı Değerlendirmesi</h3>
+        <p>Skor sistemi sadece "Kontrol Et" butonuna bastığınızda aktif olur. Tüm dalgaları doğru sınıflandırdığınızda tebrik mesajı alırsınız!</p>
+
+        <div style="text-align:center;margin-top:30px;">
+          <button class="modal-btn" onclick="closeUserGuide()">✅ Anladım, Başlayalım!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // --- Dalga Verileri ---
+  const WAVE_DATA = {
+    'dalga1': { 
+      name: 'Deprem Dalgası', 
+      vibration: ['karma'], 
+      energy: ['mekanik'], 
+      hint: 'Hem enine hem boyuna özellik gösteren mekanik dalga',
+      svg: createSeismicWaveSVG()
+    },
+    'dalga2': { 
+      name: 'Görünür Işık', 
+      vibration: ['enine'], 
+      energy: ['elektromanyetik'], 
+      hint: 'Elektromanyetik spektrumun görünür kısmı',
+      svg: createLightWaveSVG()
+    },
+    'dalga3': { 
+      name: 'Mikrodalgalar', 
+      vibration: ['enine'], 
+      energy: ['elektromanyetik'], 
+      hint: 'Elektromanyetik dalga, enine titreşim',
+      svg: createMicrowaveSVG()
+    },
+    'dalga4': { 
+      name: 'Ney Sesi', 
+      vibration: ['boyuna'], 
+      energy: ['mekanik'], 
+      hint: 'Havada yayılan boyuna ses dalgası',
+      svg: createFluteSoundSVG()
+    },
+    'dalga5': { 
+      name: 'Röntgen Dalgaları', 
+      vibration: ['enine'], 
+      energy: ['elektromanyetik'], 
+      hint: 'Yüksek frekanslı elektromanyetik dalga',
+      svg: createXRayWaveSVG()
+    },
+    'dalga6': { 
+      name: 'Ses Dalgaları', 
+      vibration: ['boyuna'], 
+      energy: ['mekanik'], 
+      hint: 'Hava moleküllerinin boyuna titreşimi',
+      svg: createSoundWaveSVG()
+    },
+    'dalga7': { 
+      name: 'Ultrason Dalgaları', 
+      vibration: ['boyuna'], 
+      energy: ['mekanik'], 
+      hint: 'İnsan kulağının duyamadığı yüksek frekanslı ses',
+      svg: createUltrasoundSVG()
+    },
+    'dalga8': { 
+      name: 'Su Dalgaları', 
+      vibration: ['karma'], 
+      energy: ['mekanik'], 
+      hint: 'Su yüzeyinde karma titreşim özelliği',
+      svg: createWaterWaveSVG()
+    },
+    'dalga9': { 
+      name: 'Trafik Radar Dalgaları', 
+      vibration: ['enine'], 
+      energy: ['elektromanyetik'], 
+      hint: 'Elektromanyetik dalga, radar sistemi',
+      svg: createRadarWaveSVG()
+    }
+  };
+
+  const VIBRATION_CATEGORIES = [
+    { id: "enine", title: "⚡ Enine Dalga" },
+    { id: "boyuna", title: "📏 Boyuna Dalga" },
+    { id: "karma", title: "🔄 Hem Enine Hem Boyuna" },
+  ];
+
+  const ENERGY_CATEGORIES = [
+    { id: "mekanik", title: "⚙️ Mekanik Dalga" },
+    { id: "elektromanyetik", title: "🌈 Elektromanyetik Dalga" },
+  ];
+
+  // --- Yardımcılar ---
+  function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+  // --- Durum ---
+  let waves = Object.keys(WAVE_DATA);
+  let placement = {}; // waveId -> {vibration: zoneId, energy: zoneId}
+  let checked = false;
+  let selected = null; // click-to-place
+  let currentCategoryType = null; // 'vibration' or 'energy'
+  let scoreChecked = false; // Skor kontrolü yapıldı mı?
+
+  // --- Tema Yönetimi ---
+  function initTheme() {
+    const savedTheme = localStorage.getItem('wave-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }
+
+  function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('wave-theme', newTheme);
+    
+    // Tema değişikliği animasyonu
+    const themeToggle = document.querySelector('.theme-toggle .icon');
+    if(themeToggle){
+      themeToggle.style.transform = 'rotate(360deg)';
+      setTimeout(() => {
+        themeToggle.style.transform = 'rotate(0deg)';
+      }, 300);
+    }
+  }
+
+  // --- Ses efektleri ---
+  // NOT: Ses dosyaları (true.mp3, false.mp3, conq.mp3) sunucunuzda bulunmalıdır.
+  const soundTrue = { play: () => console.log('Sound: Correct') }; 
+  const soundFalse = { play: () => console.log('Sound: Incorrect') };
+  const soundConq = { play: () => console.log('Sound: Congratulations') };
+
+  try {
+      if (typeof Audio !== 'undefined') {
+          soundTrue = new Audio('true.mp3');
+          soundFalse = new Audio('false.mp3');
+          soundConq = new Audio('conq.mp3');
+      }
+  } catch (e) {
+      console.warn("Audio not supported or files missing.");
+  }
+
+
+  // --- DOM referansları ---
+  const wavePoolEl = document.getElementById('wave-pool');
+  const poolZoneEl = document.getElementById('zone-pool');
+  const poolCountEl = document.getElementById('count-pool');
+  const scoreEl = document.getElementById('scoreArea');
+  const vibrationCategoriesEl = document.getElementById('vibration-categories');
+  const energyCategoriesEl = document.getElementById('energy-categories');
+
+  // --- Kategori alanlarını oluştur ---
+  function buildCategoryGrids(){
+    // Titreşim kategorileri
+    vibrationCategoriesEl.innerHTML = '';
+    for(const c of VIBRATION_CATEGORIES){
+      const zone = createCategoryZone(c, 'vibration');
+      vibrationCategoriesEl.appendChild(zone);
+    }
+
+    // Enerji kategorileri
+    energyCategoriesEl.innerHTML = '';
+    for(const c of ENERGY_CATEGORIES){
+      const zone = createCategoryZone(c, 'energy');
+      energyCategoriesEl.appendChild(zone);
+    }
+
+    // Pool olayları
+    poolZoneEl.addEventListener('dragover', e=>e.preventDefault());
+    poolZoneEl.addEventListener('drop', e=>handleDrop(e,'pool'));
+    poolZoneEl.addEventListener('click', ()=>handleClickZone('pool'));
+  }
+
+  function createCategoryZone(category, type){
+    const zone = document.createElement('div');
+    zone.className = 'zone';
+    zone.setAttribute('data-zone', category.id);
+    zone.setAttribute('data-type', type);
+    zone.setAttribute('role','region');
+    zone.setAttribute('aria-label', category.title);
+    zone.addEventListener('dragover', e=>e.preventDefault());
+    zone.addEventListener('drop', e=>handleDrop(e,category.id,type));
+    zone.addEventListener('click', ()=>handleClickZone(category.id,type));
+
+    const header = document.createElement('div');
+    header.className = 'zone-header';
+    const title = document.createElement('span');
+    title.className = 'zone-title';
+    title.textContent = category.title;
+    const count = document.createElement('span');
+    count.className = 'zone-count';
+    count.id = `count-${type}-${category.id}`;
+    header.appendChild(title); header.appendChild(count);
+
+    const cards = document.createElement('div');
+    cards.className = 'category-items';
+    cards.id = `items-${type}-${category.id}`;
+
+    zone.appendChild(header); zone.appendChild(cards);
+    return zone;
+  }
+
+  // --- Touch Desteği İçin Değişkenler ---
+  let touchDraggedId = null;
+  let ghostElement = null;
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  // --- Dalga görseli şablonu ---
+  function createWaveCard(waveId){
+    const wave = WAVE_DATA[waveId];
+    const el = document.createElement('div');
+    el.className = 'wave-item';
+    el.draggable = true;
+    el.title = wave.hint || '';
+    el.dataset.waveId = waveId;
+
+    // SVG içeriği
+    const svgContainer = document.createElement('div');
+    svgContainer.className = 'svg-content';
+    svgContainer.innerHTML = wave.svg;
+
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = wave.name;
+    nameSpan.style.fontSize = '11px';
+    nameSpan.style.textAlign = 'center';
+    nameSpan.style.lineHeight = '1.2';
+
+    el.appendChild(svgContainer);
+    el.appendChild(nameSpan);
+
+    if(checked){
+      // Kontrol modunda renklendirme
+      const vibrationCorrect = placement[waveId]?.vibration && wave.vibration.includes(placement[waveId].vibration);
+      const energyCorrect = placement[waveId]?.energy && wave.energy.includes(placement[waveId].energy);
+      
+      if(vibrationCorrect && energyCorrect){
+        el.classList.add('correct');
+      } else {
+        el.classList.add('wrong');
+      }
+      
+      const tick = document.createElement('span');
+      tick.className = 'tick';
+      tick.textContent = (vibrationCorrect && energyCorrect) ? '✓' : '✗';
+      el.appendChild(tick);
+    }
+
+    if(selected === waveId){
+      el.classList.add('selected');
+      el.setAttribute('aria-pressed','true');
+    }
+
+    el.addEventListener('dragstart', ev=>{
+      ev.dataTransfer.setData('text/plain', waveId);
+      ev.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('click', ()=>handleClickWave(waveId));
+
+    // Touch olayları
+    el.addEventListener('touchstart', (e)=>handleTouchStart(e, waveId));
+    el.addEventListener('touchmove', handleTouchMove);
+    el.addEventListener('touchend', handleTouchEnd);
+
+    return el;
+  }
+
+  // --- Touch Olayları ---
+  function handleTouchStart(e, waveId){
+    if(checked) return;
+    touchDraggedId = waveId;
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    
+    // Ghost element oluştur
+    ghostElement = e.currentTarget.cloneNode(true);
+    ghostElement.style.position = 'fixed';
+    ghostElement.style.pointerEvents = 'none';
+    ghostElement.style.zIndex = '1000';
+    ghostElement.style.opacity = '0.8';
+    ghostElement.style.transform = 'scale(1.1)';
+    ghostElement.style.left = touch.clientX - 50 + 'px';
+    ghostElement.style.top = touch.clientY - 20 + 'px';
+    document.body.appendChild(ghostElement);
+    
+    // preventDefault'ı sadece gerekli durumlarda çağır
+    if(touchDraggedId) {
+      e.preventDefault();
+    }
+  }
+
+  function handleTouchMove(e){
+    if(!touchDraggedId || !ghostElement) return;
+    const touch = e.touches[0];
+    ghostElement.style.left = touch.clientX - 50 + 'px';
+    ghostElement.style.top = touch.clientY - 20 + 'px';
+    
+    // Otomatik scroll
+    const scrollThreshold = 100;
+    const scrollSpeed = 15;
+    const windowHeight = window.innerHeight;
+    
+    // .container'ı scroll et
+    const container = document.querySelector('.container');
+    if(container) {
+      if(touch.clientY < scrollThreshold){
+        container.scrollBy(0, -scrollSpeed);
+      } else if(touch.clientY > windowHeight - scrollThreshold){
+        container.scrollBy(0, scrollSpeed);
+      }
+    }
+  }
+
+  function handleTouchEnd(e){
+    if(!touchDraggedId) return;
+    
+    const touch = e.changedTouches[0];
+    const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+    
+    // En yakın zone'u bul
+    let zone = dropTarget;
+    while(zone && !zone.hasAttribute('data-zone')){
+      zone = zone.parentElement;
+    }
+    
+    if(zone){
+      const zoneId = zone.getAttribute('data-zone');
+      const type = zone.getAttribute('data-type');
+      if(type){
+        placement[touchDraggedId] = placement[touchDraggedId] || {};
+        placement[touchDraggedId][type] = zoneId;
+        selected = null;
+        currentCategoryType = null;
+        render();
+      }
+    }
+    
+    // Temizle
+    if(ghostElement){
+      document.body.removeChild(ghostElement);
+      ghostElement = null;
+    }
+    touchDraggedId = null;
+  }
+
+  // --- Yerleşimden görünüme ---
+  function render(){
+    // Dalga kartlarını pool'a yerleştir
+    wavePoolEl.innerHTML = '';
+    for(const waveId of waves){
+      // Bu dalga henüz sınıflandırılmamışsa pool'da göster
+      const isPlaced = placement[waveId] && 
+                     ((placement[waveId].vibration && placement[waveId].vibration !== 'pool') ||
+                      (placement[waveId].energy && placement[waveId].energy !== 'pool'));
+      
+      if(!isPlaced){
+        wavePoolEl.appendChild(createWaveCard(waveId));
+      }
+    }
+    poolCountEl.textContent = `${wavePoolEl.children.length} dalga`;
+
+    // Kategori alanlarını güncelle
+    updateCategoryAreas();
+    
+    // Skor (sadece kontrol edildiğinde güncelle)
+    if(scoreChecked){
+      const score = computeScore();
+      scoreEl.innerHTML = `Skor: <b>${score.correct}</b> / ${score.total}`;
+    }
+  }
+
+  function updateCategoryAreas(){
+    // Titreşim kategorileri
+    for(const c of VIBRATION_CATEGORIES){
+      updateCategoryArea(c.id, 'vibration');
+    }
+    
+    // Enerji kategorileri
+    for(const c of ENERGY_CATEGORIES){
+      updateCategoryArea(c.id, 'energy');
+    }
+  }
+
+  function updateCategoryArea(categoryId, type){
+    const itemsContainer = document.getElementById(`items-${type}-${categoryId}`);
+    const countEl = document.getElementById(`count-${type}-${categoryId}`);
+    
+    // Mevcut öğeleri temizle
+    itemsContainer.innerHTML = '';
+    
+    // Bu kategoriye yerleştirilen dalgaları bul
+    const placedWaves = [];
+    for(const [waveId, zones] of Object.entries(placement)){
+      if(zones && zones[type] === categoryId){
+        placedWaves.push(waveId);
+        
+        // Yerleştirilmiş öğe oluştur
+        const placedItem = document.createElement('div');
+        placedItem.className = 'placed-item';
+        placedItem.dataset.waveId = waveId;
+        placedItem.dataset.categoryId = categoryId;
+        placedItem.dataset.type = type;
+        placedItem.textContent = WAVE_DATA[waveId].name;
+        
+        // Kontrol modunda renklendirme
+        if(checked){
+          const correctCategories = WAVE_DATA[waveId][type] || [];
+          const isCorrect = correctCategories.includes(categoryId);
+          placedItem.classList.add(isCorrect ? 'correct' : 'incorrect');
+        }
+        
+        // Kaldırma butonu
+        const removeBtn = document.createElement('span');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = '×';
+        removeBtn.onclick = () => removeFromCategory(waveId, type);
+        placedItem.appendChild(removeBtn);
+        
+        itemsContainer.appendChild(placedItem);
+      }
+    }
+    
+    countEl.textContent = `${placedWaves.length} dalga`;
+  }
+
+  function computeScore(){
+    let correct = 0;
+    let total = 0;
+    
+    // Her dalga için hem titreşim hem enerji kategorisini kontrol et
+    for(const waveId of Object.keys(WAVE_DATA)){
+      const wave = WAVE_DATA[waveId];
+      const zones = placement[waveId] || {};
+      
+      // Titreşim kontrolü
+      if(zones.vibration && wave.vibration.includes(zones.vibration)){
+        correct++;
+      }
+      total++;
+      
+      // Enerji kontrolü
+      if(zones.energy && wave.energy.includes(zones.energy)){
+        correct++;
+      }
+      total++;
+    }
+    
+    return {correct,total};
+  }
+
+  // --- Etkileşimler ---
+  function handleDrop(e, zoneId, type){
+    e.preventDefault();
+    const waveId = e.dataTransfer.getData('text/plain');
+    if(!waveId || !type) return;
+    
+    placement[waveId] = placement[waveId] || {};
+    placement[waveId][type] = zoneId;
+    selected = null;
+    currentCategoryType = null;
+    render();
+  }
+
+  function handleClickWave(waveId){
+    if(checked) return;
+    if(selected === waveId){
+      selected = null;
+      currentCategoryType = null;
+    } else {
+      selected = waveId;
+      // Hangi kategorinin seçili olduğunu belirle
+      const activeZone = document.querySelector('.zone.selected');
+      if(activeZone){
+        currentCategoryType = activeZone.getAttribute('data-type');
+      }
+    }
+    render();
+  }
+
+  function handleClickZone(zoneId, type){
+    if(!selected || !type) return;
+    placement[selected] = placement[selected] || {};
+    placement[selected][type] = zoneId;
+    selected = null;
+    currentCategoryType = null;
+    render();
+  }
+
+  function removeFromCategory(waveId, type){
+    if(placement[waveId]){
+      delete placement[waveId][type];
+      // Eğer herhangi bir kategoride kalmadıysa tamamen kaldır
+      if(!placement[waveId].vibration && !placement[waveId].energy){
+        delete placement[waveId];
+      }
+    }
+    render();
+  }
+
+  function resetAll(){ 
+    placement = {};
+    checked = false; 
+    selected = null; 
+    currentCategoryType = null;
+    scoreChecked = false; // Skor kontrolünü sıfırla
+    // Kontrol Et butonlarını tekrar göster
+    document.getElementById('btnCheck').style.display = '';
+    document.getElementById('fabCheck').style.display = '';
+    scoreEl.innerHTML = `Skor: <b>Henüz kontrol edilmedi</b>`;
+    render(); 
+  }
+
+  function revealAll(){ 
+    // Tüm dalgaları doğru kategorilere yerleştir
+    for(const [waveId, wave] of Object.entries(WAVE_DATA)){
+      placement[waveId] = placement[waveId] || {};
+      if(wave.vibration.length > 0){
+        placement[waveId].vibration = wave.vibration[0];
+      }
+      if(wave.energy.length > 0){
+        placement[waveId].energy = wave.energy[0];
+      }
+    }
+    checked = true; 
+    scoreChecked = true; // Cevapları gösterince de skor gösterilmeli
+    selected = null; 
+    currentCategoryType = null;
+    // Kontrol Et butonlarını gizle
+    document.getElementById('btnCheck').style.display = 'none';
+    document.getElementById('fabCheck').style.display = 'none';
+    render(); 
+  }
+
+  function checkNow(){ 
+    checked = true; 
+    scoreChecked = true; // Skor kontrolü yapıldı
+    render(); 
+    
+    // Ses ve mesaj kontrolü
+    const score = computeScore();
+    const correct = score.correct;
+    const total = score.total;
+    
+    if(correct === total){
+      // Hepsi doğru!
+      soundConq.play();
+      setTimeout(()=>{
+        document.getElementById('congratsModal').classList.add('show');
+      }, 500);
+    } else if(correct > total * 0.7){
+      // Çoğu doğru
+      soundTrue.play();
+    } else {
+      // Çoğu yanlış
+      soundFalse.play();
+    }
+  }
+
+  // --- Kullanım Kılavuzu Fonksiyonları ---
+  function showUserGuide() {
+    document.getElementById('userGuideModal').classList.add('show');
+  }
+
+  function closeUserGuide() {
+    document.getElementById('userGuideModal').classList.remove('show');
+  }
+
+  // --- Olay bağlama ---
+  document.getElementById('btnCheck').addEventListener('click', checkNow);
+  document.getElementById('btnReset').addEventListener('click', resetAll);
+  document.getElementById('btnReveal').addEventListener('click', revealAll);
+  document.getElementById('fabCheck').addEventListener('click', checkNow);
+  document.getElementById('fabReset').addEventListener('click', resetAll);
+  document.getElementById('fabReveal').addEventListener('click', revealAll);
+
+  // Kullanım kılavuzu modalı dış tıklama ile kapatma
+  document.getElementById('userGuideModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeUserGuide();
+    }
+  });
+
+  // --- Başlat ---
+  initTheme(); // Temayı başlat
+  buildCategoryGrids();
+  render();
+
+  // --- SVG Oluşturma Fonksiyonları ---
+  function createSeismicWaveSVG() {
+    return `<svg width="80" height="60" viewBox="0 0 80 60" style="background: white; border-radius: 5px;">
+        <path d="M5 30 L15 25 L20 35 L25 20 L30 40 L35 30 L40 25 L45 35 L50 28 L55 32 L65 30 L75 30" 
+              stroke="#8B4513" stroke-width="3" fill="none"/>
+        <path d="M5 32 L15 27 L20 37 L25 22 L30 42 L35 32 L40 27 L45 37 L50 30 L55 34 L65 32 L75 32" 
+              stroke="#CD853F" stroke-width="2" fill="none" opacity="0.7"/>
+        <text x="40" y="55" text-anchor="middle" font-size="8" fill="#666">DEPREM</text>
+    </svg>`;
+  }
+
+  function createLightWaveSVG() {
+    return `<svg width="80" height="60" viewBox="0 0 80 60" style="background: white; border-radius: 5px;">
+        <path d="M10 30 Q20 20 30 30 T50 30 T70 30" stroke="#FFD700" stroke-width="3" fill="none"/>
+        <path d="M10 30 Q20 40 30 30 T50 30 T70 30" stroke="#FF6B35" stroke-width="3" fill="none"/>
+        <circle cx="40" cy="30" r="12" fill="#FFFF00" opacity="0.3"/>
+        <text x="40" y="55" text-anchor="middle" font-size="8" fill="#666">IŞIK</text>
+    </svg>`;
+  }
+
+  function createMicrowaveSVG() {
+    return `<svg width="80" height="60" viewBox="0 0 80 60" style="background: white; border-radius: 5px;">
+        <path d="M10 30 Q17 18 24 30 T38 30 T52 30 T66 30" stroke="#9C27B0" stroke-width="3" fill="none"/>
+        <rect x="13" y="28" width="6" height="4" fill="#9C27B0" opacity="0.6"/>
+        <rect x="27" y="28" width="6" height="4" fill="#9C27B0" opacity="0.6"/>
+        <rect x="41" y="28" width="6" height="4" fill="#9C27B0" opacity="0.6"/>
+        <rect x="55" y="28" width="6" height="4" fill="#9C27B0" opacity="0.6"/>
+        <text x="40" y="55" text-anchor="middle" font-size="8" fill="#666">MİKRODALGA</text>
+    </svg>`;
+  }
+
+  function createFluteSoundSVG() {
+    return `<svg width="80" height="60" viewBox="0 0 80 60" style="background: white; border-radius: 5px;">
+        <path d="M10 30 Q20 22 30 30 Q40 38 50 30 Q60 22 70 30" stroke="#8B4513" stroke-width="3" fill="none"/>
+        <circle cx="20" cy="25" r="3" fill="#D2691E" opacity="0.7"/>
+        <circle cx="30" cy="35" r="3" fill="#D2691E" opacity="0.7"/>
+        <circle cx="40" cy="25" r="3" fill="#D2691E" opacity="0.7"/>
+        <circle cx="50" cy="35" r="3" fill="#D2691E" opacity="0.7"/>
+        <circle cx="60" cy="25" r="3" fill="#D2691E" opacity="0.7"/>
+        <text x="40" y="55" text-anchor="middle" font-size="8" fill="#666">NEY</text>
+    </svg>`;
+  }
+
+  function createXRayWaveSVG() {
+    return `<svg width="80" height="60" viewBox="0 0 80 60" style="background: white; border-radius: 5px;">
+        <path d="M10 30 Q15 25 20 30 Q25 35 30 30 Q35 25 40 30 Q45 35 50 30 Q55 25 60 30 Q65 35 70 30" 
+              stroke="#00E676" stroke-width="3" fill="none"/>
+        <line x1="15" y1="20" x2="65" y2="40" stroke="#00E676" stroke-width="2" opacity="0.5"/>
+        <line x1="15" y1="40" x2="65" y2="20" stroke="#00E676" stroke-width="2" opacity="0.5"/>
+        <text x="40" y="55" text-anchor="middle" font-size="8" fill="#666">RÖNTGEN</text>
+    </svg>`;
+  }
+
+  function createSoundWaveSVG() {
+    return `<svg width="80" height="60" viewBox="0 0 80 60" style="background: white; border-radius: 5px;">
+        <g stroke="#4A90E2" stroke-width="3" fill="none">
+            <line x1="15" y1="25" x2="15" y2="35"/>
+            <line x1="20" y1="20" x2="20" y2="40"/>
+            <line x1="25" y1="15" x2="25" y2="45"/>
+            <line x1="30" y1="20" x2="30" y2="40"/>
+            <line x1="35" y1="25" x2="35" y2="35"/>
+            <line x1="40" y1="20" x2="40" y2="40"/>
+            <line x1="45" y1="15" x2="45" y2="45"/>
+            <line x1="50" y1="20" x2="50" y2="40"/>
+            <line x1="55" y1="25" x2="55" y2="35"/>
+            <line x1="60" y1="20" x2="60" y2="40"/>
+            <line x1="65" y1="25" x2="65" y2="35"/>
+        </g>
+        <text x="40" y="55" text-anchor="middle" font-size="8" fill="#666">SES</text>
+    </svg>`;
+  }
+
+  function createUltrasoundSVG() {
+    return `<svg width="80" height="60" viewBox="0 0 80 60" style="background: white; border-radius: 5px;">
+        <path d="M10 30 Q15 28 20 30 Q25 32 30 30 Q35 28 40 30 Q45 32 50 30 Q55 28 60 30 Q65 32 70 30" 
+              stroke="#00CED1" stroke-width="3" fill="none"/>
+        <circle cx="15" cy="30" r="8" stroke="#00CED1" stroke-width="2" fill="none" opacity="0.4"/>
+        <circle cx="35" cy="30" r="8" stroke="#00CED1" stroke-width="2" fill="none" opacity="0.4"/>
+        <circle cx="55" cy="30" r="8" stroke="#00CED1" stroke-width="2" fill="none" opacity="0.4"/>
+        <text x="40" y="55" text-anchor="middle" font-size="8" fill="#666">ULTRASON</text>
+    </svg>`;
+  }
+
+  function createWaterWaveSVG() {
+    return `<svg width="80" height="60" viewBox="0 0 80 60" style="background: white; border-radius: 5px;">
+        <path d="M5 35 Q15 25 25 35 T45 35 T65 35 T85 35" stroke="#00BFFF" stroke-width="4" fill="none"/>
+        <path d="M5 40 Q15 30 25 40 T45 40 T65 40 T85 40" stroke="#87CEEB" stroke-width="2" fill="none" opacity="0.7"/>
+        <circle cx="20" cy="30" r="3" fill="#87CEEB" opacity="0.6"/>
+        <circle cx="40" cy="32" r="2" fill="#87CEEB" opacity="0.6"/>
+        <circle cx="60" cy="28" r="2" fill="#87CEEB" opacity="0.6"/>
+        <text x="40" y="55" text-anchor="middle" font-size="8" fill="#666">SU</text>
+    </svg>`;
+  }
+
+  function createRadarWaveSVG() {
+    return `<svg width="80" height="60" viewBox="0 0 80 60" style="background: white; border-radius: 5px;">
+        <path d="M10 30 Q20 18 30 30 T50 30 T70 30" stroke="#FF4500" stroke-width="3" fill="none"/>
+        <circle cx="20" cy="30" r="10" stroke="#FF4500" stroke-width="2" fill="none" opacity="0.3"/>
+        <circle cx="20" cy="30" r="15" stroke="#FF4500" stroke-width="1" fill="none" opacity="0.2"/>
+        <polygon points="55,25 65,30 55,35" fill="#FF4500" opacity="0.8"/>
+        <text x="40" y="55" text-anchor="middle" font-size="8" fill="#666">RADAR</text>
+    </svg>`;
+  }
+
+  // --- Başlat ---
+  initTheme(); // Temayı başlat
+  buildCategoryGrids();
+  render();
+  // --- Mobilde scroll yaparken appbar gizle ---
+  let lastScrollTop = 0;
+  const appbar = document.querySelector('header.appbar');
+  
+  // NOTE: Body overflow hidden olduğu için bu kod sadece görünüm geçişlerini kontrol eder, kaydırma takibi yapmaz.
+  window.addEventListener('scroll', ()=>{
+    if(window.innerWidth >= 768) return; // Sadece mobilde çalışsın
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    if(scrollTop > lastScrollTop && scrollTop > 100){
+      appbar.classList.add('hidden');
+    } else {
+      appbar.classList.remove('hidden');
+    }
+    
+    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+  });
+
+  // --- Başlat ---
+  initTheme(); // Temayı başlat
+  buildCategoryGrids();
+  render();
+  </script>
+</body>
+</html>
