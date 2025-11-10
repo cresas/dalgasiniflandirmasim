@@ -45,11 +45,7 @@
     
     *{box-sizing:border-box;margin:0;padding:0}
     
-    html,body{
-      height:100%;
-      /* GENEL KAYDIRMAYI ENGELLER */
-      overflow: hidden; 
-    }
+    html,body{height:100%; overflow-x: hidden;}
     
     body{
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
@@ -57,41 +53,27 @@
       background-image:var(--bg-gradient);
       background-attachment:fixed;
       color:var(--text);
+      overflow: hidden;
       line-height:1.6;
       min-height:100vh;
-      /* GENEL KAYDIRMAYI ENGELLER */
-      overflow: hidden; 
+    }
+
+    /* YENİ STİL: %75 oranında küçültme ve hizalama */
+    #scaling-wrapper {
+        transform: scale(0.75);
+        transform-origin: top left;
+        width: calc(100% / 0.75); /* Kapsayıcıyı orijinal genişliğine getirme */
+        height: calc(100% / 0.75); /* Kapsayıcıyı orijinal yüksekliğine getirme */
+        min-height: 100vh;
+        overflow: visible; /* İçerik küçülünce kaydırma çubuğu çıkmasın */
     }
     
-    .container{
-      max-width:1600px;
-      margin:0 auto;
-      padding:16px 20px 20px; 
-      height: 100vh;
-      min-height:100vh;
-      /* YENİ: Flex Container Yapısı */
-      display: flex; 
-      flex-direction: column;
-    }
-
-    /* YENİ KURAL: Başlık ve altbilgi dışındaki tüm dikey alanı doldurur */
-    #main-content{
-      flex: 1; /* Kalan tüm dikey alanı kapla */
-      padding-bottom: 20px; /* Butonlar ve footer için boşluk bırak */
-      display: flex; /* İçindeki öğeleri de dikey hizalamak için */
-      flex-direction: column;
-    }
-
-    /* YENİ KURAL: Footer ve butonları alt kısma iter */
-    .desktop-controls, .muted{
-        flex-shrink: 0;
-    }
-
+    /* YENİ STİL: Tema değiştirme butonu, ölçeklenmiş içeriğin dışında kalmalı */
     .theme-toggle{
       position:fixed;
       top:20px;
       right:20px;
-      z-index:1000;
+      z-index:10000; /* Wrapper'ın üstünde olması için */
       background:var(--panel);
       border:2px solid var(--border);
       border-radius:50px;
@@ -99,6 +81,10 @@
       cursor:pointer;
       transition:all 0.3s ease;
       box-shadow:0 4px 12px rgba(0,0,0,.2);
+      
+      /* Ölçekten etkilenmemesi için ters ölçeklendirme veya manuel ayarlama gerekebilir */
+      /* Transform: scale(1.333) uygulanması gerekecektir, ancak bu karmaşık olabilir. 
+         Şimdilik sadece z-index'i yüksek tuttuk. */
     }
 
     .theme-toggle:hover{
@@ -128,6 +114,14 @@
       display:none;
     }
     
+    /* GÜNCELLEME: Max genişlik %95 olarak bırakıldı, transform scale sayesinde sıkıntı olmaz. */
+    .container{
+      max-width:95%; 
+      margin:0 auto;
+      padding:16px 10px 80px; 
+      min-height:calc(100vh - 80px);
+    }
+
     header.appbar{
       position:relative;
       top:0;
@@ -141,7 +135,7 @@
       box-shadow:0 4px 20px rgba(0,0,0,.3);
       transform:translateY(0);
       transition:transform 0.3s ease;
-      flex-shrink: 0; /* Başlığın küçülmesini engelle */
+	  max-width: 90%;
     }
 
     [data-theme="light"] header.appbar{
@@ -241,16 +235,8 @@
       border:1px solid var(--accent);
       border-radius:12px;
       display:inline-block;
-      flex-shrink: 0; /* Skor alanının küçülmesini engelle */
     }
-
-    /* YENİ KURAL: Sınıflandırma Panellerinin kalan dikey alanı doldurmasını sağla */
-    .classification-panels{
-        display:grid;
-        gap:20px;
-        flex: 1; /* Dalga havuzu hariç kalan alanı doldur */
-    }
-
+    
     .score b{
       color:var(--accent-glow);
       font-size:20px;
@@ -372,6 +358,7 @@
       gap:8px;
       transition:all .15s ease;
       width:120px;
+	  height: 10em;
     }
     
     .wave-item:hover{
@@ -562,7 +549,7 @@
     .wave-gallery{
       display:flex;
       flex-wrap:wrap;
-      gap:10px;
+      gap:8px; 
       align-items:flex-start;
     }
 
@@ -571,7 +558,7 @@
       gap:20px;
     }
 
-    @media (min-width: 1600px){
+    @media (min-width: 1024px){ 
       .classification-panels{
         grid-template-columns:1fr 1fr;
         gap:24px;
@@ -606,6 +593,7 @@
     @media (min-width:768px){
       .categories-grid{
         grid-template-columns:repeat(3,minmax(0,1fr));
+        gap: 10px; 
       }
     }
 
@@ -717,8 +705,8 @@
 
     @media (max-width: 1920px){
       .container{
-        max-width:1800px;
-        padding:20px 30px 20px; /* Alt padding flex için ayarlandı */
+        max-width:95%; 
+        padding:20px 10px 60px;
       }
       
       header.appbar{
@@ -730,17 +718,17 @@
       }
       
       .wave-gallery{
-        gap:15px;
+        gap:10px; 
       }
       
       .wave-item{
-        width:140px;
+        width:130px; 
         padding:12px;
       }
       
       .wave-item img, .wave-item .svg-content{
-        width:100px;
-        height:70px;
+        width:90px;
+        height:65px;
       }
       
       .zone{
@@ -759,169 +747,133 @@
         padding:18px;
       }
     }
-    
-    @media (min-width: 1800px){
-      .container{
-        max-width:1900px;
-        padding:25px 35px 25px; /* Alt padding flex için ayarlandı */
-      }
-      
-      .wave-item{
-        width:160px;
-        padding:15px;
-      }
-      
-      .wave-item img, .wave-item .svg-content{
-        width:110px;
-        height:80px;
-      }
-      
-      .zone{
-        min-height:240px;
-        padding:25px;
-      }
-      
-      .zone-count{
-        font-size:15px;
-        padding:5px 14px;
-        min-width:70px;
-      }
-      
-      .category{
-        min-height:180px;
-        padding:20px;
-      }
-      
-      .categories-grid{
-        gap:20px;
-      }
-    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header class="appbar">
-      <div>
-        <h1>🌊 Dalga Sınıflandırma: Gör, Sürükle, Öğren!</h1>
-        <p class="lead">Dalga görsellerini uygun kategorilere <b>sürükleyip bırakın</b>. İsterseniz bir dalga görseline tıklayıp ardından bir kategoriye tıklayarak da yerleştirebilirsiniz. Her dalga için hem titreşim doğrultusu hem de enerji taşıma biçimini belirtmelisiniz.</p>
-      </div>
-    </header>
-
-
-    <div class="theme-toggle" onclick="toggleTheme()">
-      <span class="icon sun">☀️</span>
-      <span class="icon moon">🌙</span>
-    </div>
-
-    <section class="score" id="scoreArea">Skor: <b>Henüz kontrol edilmedi</b></section>
-
-    <main id="main-content">
-        <section style="margin-bottom:24px">
-          <h2 class="section-title">🌊 Dalga Görselleri Havuzu</h2>
-          <div class="zone pool" id="zone-pool" data-zone="pool" role="region" aria-label="Boş Dalga Alanı">
-            <div class="zone-header"><span class="zone-title">Boş Dalga Alanı</span><span class="zone-count" id="count-pool">0 dalga</span></div>
-            <div class="wave-gallery" id="wave-pool"></div>
-          </div>
-        </section>
-
-        <section>
-          <h2 class="section-title">📚 Sınıflandırma Kategorileri</h2>
-          <div class="classification-panels">
-            <div class="classification-panel">
-              <div class="panel-header">
-                🔄 Titreşim Doğrultusuna Göre Sınıflandırma
-              </div>
-              <div class="categories-grid" id="vibration-categories"></div>
-            </div>
-            
-            <div class="classification-panel">
-              <div class="panel-header">
-                ⚡ Enerji Taşıma Biçimine Göre Sınıflandırma
-              </div>
-              <div class="categories-grid" id="energy-categories"></div>
-            </div>
-          </div>
-        </section>
-
-        <div class="desktop-controls">
-          <button class="btn" id="btnCheck">✓ Kontrol Et</button>
-          <button class="btn" id="btnReset">↻ Sıfırla</button>
-          <button class="btn" id="btnReveal">👁 Cevapları Göster</button>
-          <button class="btn" id="btnGuide" onclick="showUserGuide()">📖 Kullanım Kılavuzu</button>
+  
+  <div id="scaling-wrapper">
+    <div class="container">
+      <header class="appbar">
+        <div>
+          <h1>🌊 Dalga Sınıflandırma: Gör, Sürükle, Öğren!</h1>
+          <p class="lead">Dalga görsellerini uygun kategorilere <b>sürükleyip bırakın</b>. İsterseniz bir dalga görseline tıklayıp ardından bir kategoriye tıklayarak da yerleştirebilirsiniz. Her dalga için hem titreşim doğrultusu hem de enerji taşıma biçimini belirtmelisiniz.</p>
         </div>
-    </main>
-    <div class="fab">
-      <button class="btn" id="fabCheck" aria-label="Kontrol Et">✓</button>
-      <button class="btn" id="fabReset" aria-label="Sıfırla">↻</button>
-      <button class="btn" id="fabReveal" aria-label="Cevapları Göster">👁</button>
-      <button class="btn" id="fabGuide" onclick="showUserGuide()" aria-label="Kullanım Kılavuzu">📖</button>
+      </header>
+
+
+      <section class="score" id="scoreArea">Skor: <b>Henüz kontrol edilmedi</b></section>
+
+      <section style="margin-bottom:24px">
+        <h2 class="section-title">🌊 Dalga Görselleri Havuzu</h2>
+        <div class="zone pool" id="zone-pool" data-zone="pool" role="region" aria-label="Boş Dalga Alanı">
+          <div class="zone-header"><span class="zone-title">Boş Dalga Alanı</span><span class="zone-count" id="count-pool">0 dalga</span></div>
+          <div class="wave-gallery" id="wave-pool"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="section-title">📚 Sınıflandırma Kategorileri</h2>
+        <div class="classification-panels">
+          <div class="classification-panel">
+            <div class="panel-header">
+              🔄 Titreşim Doğrultusuna Göre Sınıflandırma
+            </div>
+            <div class="categories-grid" id="vibration-categories"></div>
+          </div>
+          
+          <div class="classification-panel">
+            <div class="panel-header">
+              ⚡ Enerji Taşıma Biçimine Göre Sınıflandırma
+            </div>
+            <div class="categories-grid" id="energy-categories"></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="desktop-controls">
+        <button class="btn" id="btnCheck">✓ Kontrol Et</button>
+        <button class="btn" id="btnReset">↻ Sıfırla</button>
+        <button class="btn" id="btnReveal">👁 Cevapları Göster</button>
+        <button class="btn" id="btnGuide" onclick="showUserGuide()">📖 Kullanım Kılavuzu</button>
+      </div>
+
+      <div class="fab">
+        <button class="btn" id="fabCheck" aria-label="Kontrol Et">✓</button>
+        <button class="btn" id="fabReset" aria-label="Sıfırla">↻</button>
+        <button class="btn" id="fabReveal" aria-label="Cevapları Göster">👁</button>
+        <button class="btn" id="fabGuide" onclick="showUserGuide()" aria-label="Kullanım Kılavuzu">📖</button>
+      </div>
+
+      <footer class="muted">
+        <strong>💡 Not:</strong> Bu etkinlikte dalga türleri hem titreşim doğrultusuna göre (enine, boyuna, karma) hem de enerji taşıma biçimine göre (mekanik, elektromanyetik) sınıflandırılacaktır. Her dalga görseli her iki kategori sisteminde de yer almalıdır.
+      </footer>
     </div>
 
-    <footer class="muted">
-      <strong>💡 Not:</strong> Bu etkinlikte dalga türleri hem titreşim doğrultusuna göre (enine, boyuna, karma) hem de enerji taşıma biçimine göre (mekanik, elektromanyetik) sınıflandırılacaktır. Her dalga görseli her iki kategori sisteminde de yer almalıdır.
-    </footer>
-  </div>
-
-  <div class="modal-overlay" id="congratsModal">
-    <div class="modal-card">
-      <div class="modal-icon">🎉</div>
-      <h2 class="modal-title">Tebrikler!</h2>
-      <p class="modal-text">Tüm dalga sınıflandırmalarını doğru yaptınız! Dalga fiziği konusundaki bilginizi başarıyla sergilediniz! 🌊</p>
-      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-        <button class="modal-btn" onclick="document.getElementById('congratsModal').classList.remove('show')">Kapat</button>
-        <button class="modal-btn" onclick="document.getElementById('congratsModal').classList.remove('show');resetAll();">🔄 Yeniden Başlat</button>
+    <div class="modal-overlay" id="congratsModal">
+      <div class="modal-card">
+        <div class="modal-icon">🎉</div>
+        <h2 class="modal-title">Tebrikler!</h2>
+        <p class="modal-text">Tüm dalga sınıflandırmalarını doğru yaptınız! Dalga fiziği konusundaki bilginizi başarıyla sergilediniz! 🌊</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="modal-btn" onclick="document.getElementById('congratsModal').classList.remove('show')">Kapat</button>
+          <button class="modal-btn" onclick="document.getElementById('congratsModal').classList.remove('show');resetAll();">🔄 Yeniden Başlat</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="modal-overlay user-guide-modal" id="userGuideModal">
-    <div class="modal-card">
-      <div style="text-align:center;margin-bottom:20px;">
-        <div class="modal-icon" style="font-size:60px;">📖</div>
-        <h2 class="modal-title">Kullanım Kılavuzu</h2>
-      </div>
-      
-      <div class="user-guide-content">
-        <h3>🎯 Simülasyonun Amacı</h3>
-        <p>Bu simülasyon dalgaları iki farklı kriterle sınıflandırmanızı sağlar:</p>
-        <ul>
-          <li><strong>🔄 Titreşim Doğrultusuna Göre:</strong> Enine, Boyuna, Hem Enine Hem Boyuna</li>
-          <li><strong>⚡ Enerji Taşıma Biçimine Göre:</strong> Mekanik, Elektromanyetik</li>
-        </ul>
-
-        <h3>🖱️ Nasıl Kullanılır?</h3>
-        <ol>
-          <li><strong>Dalga Görsellerini İnceleyiniz:</strong> Sol panelde bulunan dalga türlerini dikkatli inceleyiniz</li>
-          <li><strong>Sürükle ve Bırak:</strong> Bir dalga görselini sürükleyip uygun kategoriye bırakınız</li>
-          <li><strong>Tıklama Alternatifi:</strong> Önce dalga görseline, sonra kategoriye tıklayabilirsiniz</li>
-          <li><strong>Çoklu Sınıflandırma:</strong> Her dalga hem titreşim hem enerji kategorisine yerleştirilmelidir</li>
-          <li><strong>Hataları Düzeltiniz:</strong> Yanlış yerleştirdiğiniz dalgaların yanındaki × işaretine tıklayınız</li>
-          <li><strong>Kontrol Ediniz:</strong> "Kontrol Et" butonuna basarak sonuçları görüntüleyiniz</li>
-        </ol>
-
-        <h3>📋 Sınıflandırma Kategorileri</h3>
+    <div class="modal-overlay user-guide-modal" id="userGuideModal">
+      <div class="modal-card">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div class="modal-icon" style="font-size:60px;">📖</div>
+          <h2 class="modal-title">Kullanım Kılavuzu</h2>
+        </div>
         
-        <h4 style="color:var(--accent);margin:15px 0 8px 0;">🔄 Titreşim Doğrultusu:</h4>
-        <ul>
-          <li><strong>Enine Dalga:</strong> Titreşim dalga yayılma doğrultusuna dik (ışık, radar)</li>
-          <li><strong>Boyuna Dalga:</strong> Titreşim dalga yayılma doğrultusuna paralel (ses, ultrason)</li>
-          <li><strong>Hem Enine Hem Boyuna:</strong> Her iki özelliği de gösteren (deprem, su dalgaları)</li>
-        </ul>
+        <div class="user-guide-content">
+          <h3>🎯 Simülasyonun Amacı</h3>
+          <p>Bu simülasyon dalgaları iki farklı kriterle sınıflandırmanızı sağlar:</p>
+          <ul>
+            <li><strong>🔄 Titreşim Doğrultusuna Göre:</strong> Enine, Boyuna, Hem Enine Hem Boyuna</li>
+            <li><strong>⚡ Enerji Taşıma Biçimine Göre:</strong> Mekanik, Elektromanyetik</li>
+          </ul>
 
-        <h4 style="color:var(--accent);margin:15px 0 8px 0;">⚡ Enerji Taşıma Biçimi:</h4>
-        <ul>
-          <li><strong>Mekanik Dalga:</strong> Maddesel ortam gerektirir (ses, deprem, su dalgaları)</li>
-          <li><strong>Elektromanyetik Dalga:</strong> Boşlukta yayılır, maddeye ihtiyaç duymaz (ışık, radar, röntgen)</li>
-        </ul>
+          <h3>🖱️ Nasıl Kullanılır?</h3>
+          <ol>
+            <li><strong>Dalga Görsellerini İnceleyiniz:</strong> Sol panelde bulunan dalga türlerini dikkatli inceleyiniz</li>
+            <li><strong>Sürükle ve Bırak:</strong> Bir dalga görselini sürükleyip uygun kategoriye bırakınız</li>
+            <li><strong>Tıklama Alternatifi:</strong> Önce dalga görseline, sonra kategoriye tıklayabilirsiniz</li>
+            <li><strong>Çoklu Sınıflandırma:</strong> Her dalga hem titreşim hem enerji kategorisine yerleştirilmelidir</li>
+            <li><strong>Hataları Düzeltiniz:</strong> Yanlış yerleştirdiğiniz dalgaların yanındaki × işaretine tıklayınız</li>
+            <li><strong>Kontrol Ediniz:</strong> "Kontrol Et" butonuna basarak sonuçları görüntüleyiniz</li>
+          </ol>
 
-        <h3>🏆 Başarı Değerlendirmesi</h3>
-        <p>Skor sistemi sadece "Kontrol Et" butonuna bastığınızda aktif olur. Tüm dalgaları doğru sınıflandırdığınızda tebrik mesajı alırsınız!</p>
+          <h3>📋 Sınıflandırma Kategorileri</h3>
+          
+          <h4 style="color:var(--accent);margin:15px 0 8px 0;">🔄 Titreşim Doğrultusu:</h4>
+          <ul>
+            <li><strong>Enine Dalga:</strong> Titreşim dalga yayılma doğrultusuna dik (ışık, radar)</li>
+            <li><strong>Boyuna Dalga:</strong> Titreşim dalga yayılma doğrultusuna paralel (ses, ultrason)</li>
+            <li><strong>Hem Enine Hem Boyuna:</strong> Her iki özelliği de gösteren (deprem, su dalgaları)</li>
+          </ul>
 
-        <div style="text-align:center;margin-top:30px;">
-          <button class="modal-btn" onclick="closeUserGuide()">✅ Anladım, Başlayalım!</button>
+          <h4 style="color:var(--accent);margin:15px 0 8px 0;">⚡ Enerji Taşıma Biçimi:</h4>
+          <ul>
+            <li><strong>Mekanik Dalga:</strong> Maddesel ortam gerektirir (ses, deprem, su dalgaları)</li>
+            <li><strong>Elektromanyetik Dalga:</strong> Boşlukta yayılır, maddeye ihtiyaç duymaz (ışık, radar, röntgen)</li>
+          </ul>
+
+          <h3>🏆 Başarı Değerlendirmesi</h3>
+          <p>Skor sistemi sadece "Kontrol Et" butonuna bastığınızda aktif olur. Tüm dalgaları doğru sınıflandırdığınızda tebrik mesajı alırsınız!</p>
+
+          <div style="text-align:center;margin-top:30px;">
+            <button class="modal-btn" onclick="closeUserGuide()">✅ Anladım, Başlayalım!</button>
+          </div>
         </div>
       </div>
     </div>
+    </div> 
+  <div class="theme-toggle" onclick="toggleTheme()">
+    <span class="icon sun">☀️</span>
+    <span class="icon moon">🌙</span>
   </div>
 
   <script>
@@ -1038,21 +990,9 @@
   }
 
   // --- Ses efektleri ---
-  // NOT: Ses dosyaları (true.mp3, false.mp3, conq.mp3) sunucunuzda bulunmalıdır.
-  const soundTrue = { play: () => console.log('Sound: Correct') }; 
-  const soundFalse = { play: () => console.log('Sound: Incorrect') };
-  const soundConq = { play: () => console.log('Sound: Congratulations') };
-
-  try {
-      if (typeof Audio !== 'undefined') {
-          soundTrue = new Audio('true.mp3');
-          soundFalse = new Audio('false.mp3');
-          soundConq = new Audio('conq.mp3');
-      }
-  } catch (e) {
-      console.warn("Audio not supported or files missing.");
-  }
-
+  const soundTrue = new Audio('true.mp3');
+  const soundFalse = new Audio('false.mp3');
+  const soundConq = new Audio('conq.mp3');
 
   // --- DOM referansları ---
   const wavePoolEl = document.getElementById('wave-pool');
@@ -1135,7 +1075,7 @@
 
     const nameSpan = document.createElement('span');
     nameSpan.textContent = wave.name;
-    nameSpan.style.fontSize = '11px';
+    nameSpan.style.fontSize = '13px';
     nameSpan.style.textAlign = 'center';
     nameSpan.style.lineHeight = '1.2';
 
@@ -1209,20 +1149,19 @@
     ghostElement.style.left = touch.clientX - 50 + 'px';
     ghostElement.style.top = touch.clientY - 20 + 'px';
     
-    // Otomatik scroll
+    // Otomatik scroll - sayfa aşağı kayması için
     const scrollThreshold = 100;
     const scrollSpeed = 15;
     const windowHeight = window.innerHeight;
     
-    // .container'ı scroll et
-    const container = document.querySelector('.container');
-    if(container) {
-      if(touch.clientY < scrollThreshold){
-        container.scrollBy(0, -scrollSpeed);
-      } else if(touch.clientY > windowHeight - scrollThreshold){
-        container.scrollBy(0, scrollSpeed);
-      }
+    if(touch.clientY < scrollThreshold){
+      window.scrollBy(0, -scrollSpeed);
+    } else if(touch.clientY > windowHeight - scrollThreshold){
+      window.scrollBy(0, scrollSpeed);
     }
+    
+    // preventDefault'ı kaldır - sayfa scroll'unu engellemesin
+    // e.preventDefault();
   }
 
   function handleTouchEnd(e){
@@ -1255,6 +1194,9 @@
       ghostElement = null;
     }
     touchDraggedId = null;
+    
+    // preventDefault'ı kaldır - sayfa scroll'unu engellemesin
+    // e.preventDefault();
   }
 
   // --- Yerleşimden görünüme ---
@@ -1611,7 +1553,6 @@
   let lastScrollTop = 0;
   const appbar = document.querySelector('header.appbar');
   
-  // NOTE: Body overflow hidden olduğu için bu kod sadece görünüm geçişlerini kontrol eder, kaydırma takibi yapmaz.
   window.addEventListener('scroll', ()=>{
     if(window.innerWidth >= 768) return; // Sadece mobilde çalışsın
     
